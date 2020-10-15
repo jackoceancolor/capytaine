@@ -19,6 +19,7 @@ logging.basicConfig(level=logging.WARNING)
 
 # create buoy (float of the WEC, but 'float' is reserved in Python)
 buoy_file = os.getcwd() + os.path.sep + 'float_ref.stl'
+# buoy_file = os.getcwd() + os.path.sep + 'float.stl'
 buoy = cpt.FloatingBody.from_file(buoy_file)
 buoy.add_translation_dof(name="Surge")
 buoy.add_translation_dof(name="Sway")
@@ -27,10 +28,11 @@ buoy.add_rotation_dof(name="Roll")
 buoy.add_rotation_dof(name="Pitch")
 buoy.add_rotation_dof(name="Yaw")
 buoy.translate_z(-0.72)
-# buoy.keep_immersed_part()
+buoy.keep_immersed_part()
 
 # create plate from input stl file
 plate_file = os.getcwd() + os.path.sep + 'plate_ref.stl'
+# plate_file = os.getcwd() + os.path.sep + 'plate.stl'
 plate = cpt.FloatingBody.from_file(plate_file)
 plate.add_translation_dof(name="Surge")
 plate.add_translation_dof(name="Sway")
@@ -39,7 +41,7 @@ plate.add_rotation_dof(name="Roll")
 plate.add_rotation_dof(name="Pitch")
 plate.add_rotation_dof(name="Yaw")
 plate.translate_z(-21.29)
-# plate.keep_immersed_part()
+plate.keep_immersed_part()
 
 combo = plate+buoy
 # combo.show()
@@ -70,12 +72,12 @@ rm3_results = solver.fill_dataset(
     wavelength=True,
     mesh=False, 
     hydrostatics=True,
-    keep_details=True
+    # keep_details=True
     )
 
 
 # save results in dataset to NetCDF file
-dataset = cpt.io.xarray.separate_complex_values(rm3_results)
+rm3_results = cpt.io.xarray.separate_complex_values(rm3_results)
 filename = os.getcwd() + os.path.sep + 'rm3.nc'
 print(filename)
 rm3_results.to_netcdf(filename)
