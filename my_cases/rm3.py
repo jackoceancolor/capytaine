@@ -24,12 +24,12 @@ logging.basicConfig(level=logging.WARNING)
 buoy_file = os.getcwd() + os.path.sep + 'Meshes\\nemoh_float.dat'
 form = 'nemoh'
 
-# buoy_file = os.getcwd() + os.path.sep + 'Meshes\\wamit_float.gdp'
+# buoy_file = os.getcwd() + os.path.sep + 'Meshes\\wamit_float.gdf'
 # form = 'wamit'
 
 buoy = cpt.FloatingBody.from_file(
     filename=buoy_file,
-    file_format='stl',
+    file_format=form,
     name='buoy')
 buoy.translate_z(-0.72)
 buoy.keep_immersed_part()
@@ -48,7 +48,7 @@ buoy.add_rotation_dof(name="Yaw")
 plate_file = os.getcwd() + os.path.sep + 'Meshes\\nemoh_spar.dat'
 form = 'nemoh'
 
-# plate_file = os.getcwd() + os.path.sep + 'Meshes\\wamit_spar.gdp'
+# plate_file = os.getcwd() + os.path.sep + 'Meshes\\wamit_spar.gdf'
 # form = 'wamit'
 
 plate = cpt.FloatingBody.from_file(
@@ -69,38 +69,44 @@ combo = plate+buoy
 ###################################################################
 
 all_dofs = ['Surge','Sway','Heave','Roll','Pitch','Yaw']
+# all_dofs = ['plate__Surge', 'plate__Sway', 'plate__Heave',
+#             'plate__Roll', 'plate__Pitch', 'plate__Yaw',
+#             'buoy__Surge', 'buoy__Sway', 'buoy__Heave',
+#             'buoy__Roll', 'buoy__Pitch', 'buoy__Yaw']
 
 
 # Note: radiating_dof can only include up to the body's dofs 
 test_matrix = xr.Dataset(coords={
-    'omega': np.linspace(0.02, 5.2, 10),
-    # 'omega': np.linspace(0.02, 5.2, 5),
+    # 'omega': np.linspace(0.02, 5.2, 260),
+    'omega': np.linspace(0.02, 5.2, 3),
+    
     'wave_direction': np.linspace(0, np.pi/2, 2),
+    
     'theta': np.linspace(0, np.pi/2, 2),
     
     'influenced_dof': all_dofs,
     # 'influenced_dof': list(combo.dofs),
     # 'influenced_dof': combo.dofs,
      
-    # 'radiating_dof': all_dofs,
+    'radiating_dof': all_dofs,
     # 'radiating_dof': list(combo.dofs),
-    'radiating_dof': combo.dofs,
+    # 'radiating_dof': combo.dofs,
     
     'water_depth': [np.infty],
 })
 
 # solver = cpt.BEMSolver(green_function=cpt.XieDelhommeau(),
-#                        engine=cpt.BasicMatrixEngine())
+#                         engine=cpt.BasicMatrixEngine())
 solver = cpt.BEMSolver()
 
 rm3_results = solver.fill_dataset(
     test_matrix, 
-    # [buoy, plate],
-    [comob],
+    [buoy, plate],
+    # [combo],
     wavenumber=True, 
     wavelength=True,
-    mesh=True, 
-    hydrostatics=True,
+    # mesh=True, 
+    hydrostatics=True,  # greatly adds to comp. time?, unsure on benefit?
     # keep_details=True
     )
 
