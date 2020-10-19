@@ -2,8 +2,9 @@
 % assuming netcdf format
 
 % import WAMIT RM3 simulation for comparison
-hydro_wamit = load('hydro_rm3_wamit.mat');
+hydro_wamit = load('rm3_hydro.mat');
 hydro_wamit = hydro_wamit.hydro;
+hydro = struct;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Read in NETCDF file\
@@ -22,7 +23,7 @@ hydro_wamit = hydro_wamit.hydro;
 
 
 % list of variables to get from netcdf file
-hydro = struct();
+hydro = 
 var_to_read = {'complex',...
     'omega',...
     'radiating_dof',...   % dimensions
@@ -33,21 +34,16 @@ var_to_read = {'complex',...
     'added_mass','radiation_damping','diffraction_force',...    % variables
     'Froude_Krylov_force','kochin_diffraction','kochin',...     % variables
     };
-
-% choose file to read
-% filename = '"C:/Users/akeeste/Documents/Software/GitHub/capytaine/my_cases/capytaine1.nc"';
-% fn2 = eval(filename);
-
-filename = '"C:/Users/akeeste/Documents/Software/GitHub/capytaine/my_cases/rm3.nc"';
-fn2 = eval(filename);
+filename = '"C:/Users/akeeste/Documents/Software/GitHub/capytaine/my_cases/capytaine1.nc"';
+fn2 = "C:/Users/akeeste/Documents/Software/GitHub/capytaine/my_cases/capytaine1.nc";
 
 for i=1:length(var_to_read)
     current_var = var_to_read{i};
-%     f = strcat('hydro.', current_var, ' = ncread(', fn2, ', "', current_var, '");');
-    f = ['hydro.', current_var, ' = ncread(', filename, ', "', current_var, '");'];
+%     f = strcat('cpt_', current_var, ' = ncread(', filename, ', "', current_var, '");');
+    f = ['cpt_', current_var, ' = ncread(', filename, ', "', current_var, '");'];
 %     fprintf([f '\n']);
     eval(f);
-end; clear i;
+end
         
 % cpt_omega = ncread(filename, var_to_read);
 
