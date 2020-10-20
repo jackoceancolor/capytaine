@@ -15,7 +15,7 @@ import capytaine as cpt
 import logging
 import os
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.INFO)
 
 # create buoy from input 
 # (float of the WEC, but 'float' is reserved in Python)
@@ -74,45 +74,46 @@ all_dofs = ['Surge','Sway','Heave','Roll','Pitch','Yaw']
 #             'buoy__Surge', 'buoy__Sway', 'buoy__Heave',
 #             'buoy__Roll', 'buoy__Pitch', 'buoy__Yaw']
 
+directions = np.linspace(0, np.pi, 2)
+
 
 # Note: radiating_dof can only include up to the body's dofs 
 test_matrix = xr.Dataset(coords={
     # 'omega': np.linspace(0.02, 5.2, 260),
-    'omega': np.linspace(0.02, 5.2, 3),
+    'omega': np.linspace(0.02, 5.2, 38),
+    # 'omega': np.linspace(0.02, 5.2, 3),
     
-    'wave_direction': np.linspace(0, np.pi/2, 2),
+    'wave_direction': directions,
     
-    'theta': np.linspace(0, np.pi/2, 2),
+    'theta': directions,
     
-    'influenced_dof': all_dofs,
-    # 'influenced_dof': list(combo.dofs),
-    # 'influenced_dof': combo.dofs,
+    # 'influenced_dof': all_dofs,
+    'influenced_dof': list(combo.dofs),
      
-    'radiating_dof': all_dofs,
-    # 'radiating_dof': list(combo.dofs),
-    # 'radiating_dof': combo.dofs,
+    # 'radiating_dof': all_dofs,
+    'radiating_dof': list(combo.dofs),
     
     'water_depth': [np.infty],
 })
 
-# solver = cpt.BEMSolver(green_function=cpt.XieDelhommeau(),
-#                         engine=cpt.BasicMatrixEngine())
-solver = cpt.BEMSolver()
+solver = cpt.BEMSolver(green_function=cpt.XieDelhommeau(),
+                        engine=cpt.BasicMatrixEngine())
+# solver = cpt.BEMSolver()
 
 rm3_results = solver.fill_dataset(
     test_matrix, 
-    [buoy, plate],
-    # [combo],
+    # [buoy, plate],
+    [combo],
     wavenumber=True, 
     wavelength=True,
     # mesh=True, 
-    hydrostatics=True,  # greatly adds to comp. time?, unsure on benefit?
+    hydrostatics=True,
     # keep_details=True
     )
 
 
 # save results in dataset to NetCDF file
 rm3_results = cpt.io.xarray.separate_complex_values(rm3_results)
-filename = os.getcwd() + os.path.sep + 'rm3.nc'
+filename = os.getcwd() + os.path.sep + 'rm3_combo_long.nc'
 print(filename)
 rm3_results.to_netcdf(filename)
