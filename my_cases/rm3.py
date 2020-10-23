@@ -86,32 +86,35 @@ test_matrix = xr.Dataset(coords={
     'wave_direction': 0,
     
     # 'theta': np.linspace(0, np.pi, 2),
-    'theta': 0,
     
-    # 'influenced_dof': all_dofs,
-    'influenced_dof': list(combo.dofs),
+    'influenced_dof': all_dofs,
+    # 'influenced_dof': list(combo.dofs),
      
-    # 'radiating_dof': all_dofs,
-    'radiating_dof': list(combo.dofs),
+    'radiating_dof': all_dofs,
+    # 'radiating_dof': list(combo.dofs),
     
     'water_depth': [np.infty],
 })
 
 solver = cpt.BEMSolver(
-    green_function=cpt.XieDelhommeau(),
+    # green_function=cpt.XieDelhommeau(),
+    green_function=cpt.Delhommeau(),
     engine=cpt.BasicMatrixEngine()
     )
 
 rm3_results = solver.fill_dataset(
     test_matrix, 
-    # [buoy, plate],
-    [combo],
+    [buoy, plate],
+    # [combo],
     wavenumber=True, 
     wavelength=True,
-    # mesh=True, 
+    mesh=True, 
     hydrostatics=True,
     # keep_details=True
     )
+
+change fill_dataset to a list of problems, list of results and then combining results into a dataset
+this makes it easier to rerun the output / post-processing if theres an issue
 
 
 # save results in dataset to NetCDF file

@@ -51,7 +51,7 @@ elseif b>1;  F = b+1;
 end
 
 %%
-p = waitbar(0,'Reading AQWA output file...'); %Progress bar
+% p = waitbar(0,'Reading AQWA output file...'); %Progress bar
 
 hydro(F).code = 'CAPYTAINE';
 [filepath,name,ext] = fileparts(filename);
@@ -97,6 +97,11 @@ for i=1:length(req_vars)
 end
 
 
+test = ["Surge","Heave","Yaw","Sway","Roll","Pitch"];
+var = ([1:6]'*[1 3 6 2 4 5])';
+nv = reset_dofs(var,test,1);
+
+
 % begin parsing netcdf file to hydro struct
 cpt = struct();
 
@@ -126,26 +131,9 @@ hydro(F).beta = ncread(fn2,'wave_direction');
 dof_i = info.Dimensions(getInd(info.Dimensions,'influenced_dof')).Length;
 dof_r = info.Dimensions(getInd(info.Dimensions,'radiating_dof')).Length;
 hydro(F).dof = [dof_i, dof_r];
-waitbar(1/8);
 
-
-%%
-hydro(F).cg = zeros(3,hydro(F).Nb);
-hydro(F).cb = zeros(3,hydro(F).Nb);
-hydro(F).cb = zeros(1,hydro(F).Nb);
-% Vo = Displacement volume
-waitbar(2/8);
-
-%%
-% hydro(F).C(i,:,m) = tmp{1,1}(1:6);  % Linear restoring stiffness
-waitbar(3/8);
-
-%%
-% hydro(F).A(i,:,k) = tmp{1,1}(2:2:end);  % Added mass
-% hydro(F).B(i,:,k) = tmp{1,1}(3:2:end);  % Radiation damping
-waitbar(4/8);
-
-%%
+%% Reordering parameters
+% check the ordering of the 'complex' dimension
 tmp = ncread(fn2,'complex')';
 if tmp(1,:) == "re" && tmp(2,:) == "im"
     i_re = 1;
@@ -157,6 +145,45 @@ else
     error('check complex dimension indices');
 end
 
+% check the ordering of the 'radiating_dof' dimension
+rdofs = lower(string(ncread(fn2,'radiating_dofs')'));
+if rdofs(1)=="surge" && rdofs(2)=="sway" && rdofs(3)=="heave" && ...
+        rdofs(4)=="roll" && rdofs(5)=="pitch" && rdofs(6)=="yaw"
+    reset_rdofs = False;
+else
+    reset_rdofs = True;
+end
+
+% check the ordering of the 'influenced_dof' dimension
+idofs = lower(string(ncread(fn2,'influenced_dofs')'));
+if idofs(1)=="surge" && idofs(2)=="sway" && idofs(3)=="heave" && ...
+        idofs(4)=="roll" && idofs(5)=="pitch" && idofs(6)=="yaw"
+    reset_idofs = False;
+else
+    reset_idofs = True;
+end
+
+%waitbar(1/8);
+
+
+%%
+% Capytaine doesn't currently have hydrostatics data
+% hydro(F).cg = zeros(3,hydro(F).Nb);
+% hydro(F).cb = zeros(3,hydro(F).Nb);
+% Vo = Displacement volume,
+%waitbar(2/8);
+
+%%
+% Capytaine doesn't currently have hydrostatics data
+% hydro(F).C(i,:,m) = tmp{1,1}(1:6);  % Linear restoring stiffness
+%waitbar(3/8);
+
+%%
+% hydro(F).A(i,:,k) = tmp{1,1}(2:2:end);  % Added mass
+% hydro(F).B(i,:,k) = tmp{1,1}(3:2:end);  % Radiation damping
+%waitbar(4/8);
+
+
 %% Excitation Force [6*Nb,Nh,Nf];
 % CHECK if the kochin_diffraction is actually the excitation force
 % i_var = getInd(info.Variables,'kochin_diffraction');
@@ -167,13 +194,15 @@ end
 % end
 % 
 % tmp = ncread(fn2,'kochin_diffraction');
+% if reset_rdof; tmp = reset_dofs(tmp,rdofs,1); end
+% if reset_idof; tmp = reset_dofs(tmp,idofs,2); end
 % for n=1:hydro(F).Nb
 %     hydro(F).sc_re(6*(n-1)+1:6*n,:,:) = tmp(:,:,:,n,i_re);         % Real part of diffraction force
 %     hydro(F).sc_im(6*(n-1)+1:6*n,:,:) = tmp(:,:,:,n,i_im);         % Imaginary part of diffraction force
 % end
 % hydro(F).sc_ma = (hydro(F).sc_re.^2 + hydro(F).sc_im.^2).^0.5;  % Magnitude of diffraction force
 % hydro(F).sc_ph = atan(hydro(F).sc_im./hydro(F).sc_re);          % Phase of diffraction force
-% waitbar(5/8);
+% %waitbar(5/8);
 
 %% Diffraction Force (scattering) [6*Nb,Nh,Nf];
 i_var = getInd(info.Variables,'diffraction_force');
@@ -191,6 +220,9 @@ if hydro(F).Nb == 1 || i_bod == 0
 else
     tmp = permute(tmp,[i_infdof, i_dir, i_w, i_comp, i_bod]);
 end
+if reset_idof
+    tmp = reset_dofs(tmp,idofs,1); 
+end
 
 for n=1:hydro(F).Nb
     hydro(F).sc_re(6*(n-1)+1:6*n,:,:) = tmp(:,:,:,i_re,n);      % Real part of diffraction force
@@ -198,9 +230,9 @@ for n=1:hydro(F).Nb
 end
 hydro(F).sc_ma = (hydro(F).sc_re.^2 + hydro(F).sc_im.^2).^0.5;  % Magnitude of diffraction force
 hydro(F).sc_ph = atan(hydro(F).sc_im./hydro(F).sc_re);          % Phase of diffraction force
-waitbar(6/8);
+%waitbar(6/8);
 
-%% Froude-Krylov force file
+%% Froude-Krylov force file [6*Nb,Nh,Nf];
 i_var = getInd(info.Variables,'Froude_Krylov_force');
 
 dim = info.Variables(i_var).Dimensions;
@@ -216,6 +248,9 @@ if hydro(F).Nb == 1 || i_bod == 0
 else
     tmp = permute(tmp,[i_infdof, i_dir, i_w, i_comp, i_bod]);
 end
+if reset_idof
+    tmp = reset_dofs(tmp,idofs,1); 
+end
 
 for n=1:hydro(F).Nb
     hydro(F).fk_re(6*(n-1)+1:6*n,:,:) = tmp(:,:,:,i_re,n);      % Real part of Froude Krylov force
@@ -223,7 +258,7 @@ for n=1:hydro(F).Nb
 end
 hydro(F).fk_ma = (hydro(F).fk_re.^2 + hydro(F).fk_im.^2).^0.5;  % Magnitude of Froude Krylov force
 hydro(F).fk_ph = atan(hydro(F).fk_im./hydro(F).fk_re);          % Phase of Froude Krylov force
-waitbar(7/8);
+%waitbar(7/8);
 
 
 %% ================= READING KOCHIN FILES ===================%
@@ -231,7 +266,7 @@ waitbar(7/8);
 % Kochin_BVP(ntheta,1,x)= Kochin(3*(ntheta-1)+2); % magnitude
 % Kochin_BVP(ntheta,2,x)= Kochin(3*(ntheta-1)+3); % phase
 
-waitbar(8/8);
+%waitbar(8/8);
 
 hydro = Normalize(hydro);  % Normalize the data according the WAMIT convention
 
@@ -284,4 +319,29 @@ Plot_BEMIO(hydro)
 % hydro_nemoh.ex_K, % from Excitation_IRF()
 % hydro_nemoh.ex_t, % from Excitation_IRF()
 % hydro_nemoh.ex_w % from Excitation_IRF()
+
+
+function new_var = reset_dofs(variable, old_dofs, dim)
+% this function will rearrange dimension dim of a variable if the dofs 
+% are not in the correct order: surge, sway, heave, roll, pitch, yaw
+new_dofs = ["surge", "sway", "heave", "roll", "pitch", "yaw"];
+new_inds = zeros(6,1);
+for i=1:6
+    for j=1:6
+        if lower(old_dofs(j)) == new_dofs(i)
+            new_inds(i) = j;
+            continue
+        end
+    end
+end
+
+new_var = zeros(size(variable));
+str = [repmat(':,',[1,dim-1]) 'new_inds,' repmat(':,',[1,7]) ':'];
+eval(['new_var = variable(' str ');']);
+
+% new_var = variable(new_inds,:,:,:,:,:,:,:);
+
+end
+
+
 
