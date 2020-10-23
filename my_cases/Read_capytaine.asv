@@ -225,23 +225,7 @@ hydro(F).fk_ma = (hydro(F).fk_re.^2 + hydro(F).fk_im.^2).^0.5;  % Magnitude of F
 hydro(F).fk_ph = atan(hydro(F).fk_im./hydro(F).fk_re);          % Phase of Froude Krylov force
 waitbar(7/8);
 
-
-%% ================= READING KOCHIN FILES ===================%
-% theta(ntheta)= Kochin(3*(ntheta-1)+1); % theta
-% Kochin_BVP(ntheta,1,x)= Kochin(3*(ntheta-1)+2); % magnitude
-% Kochin_BVP(ntheta,2,x)= Kochin(3*(ntheta-1)+3); % phase
-
-waitbar(8/8);
-
-hydro = Normalize(hydro);  % Normalize the data according the WAMIT convention
-
 %% Next function calls for WAMIT, NEMOH, AQWA after call to READ_''.m
-hydro = Radiation_IRF(hydro,60,[],[],[],[]);
-hydro = Radiation_IRF_SS(hydro,[],[]);
-hydro = Excitation_IRF(hydro,160,[],[],[],[]);
-Write_H5(hydro)
-Plot_BEMIO(hydro)
-
 % % wamit
 % hydro = Read_WAMIT(hydro,'rm3.out',[]);
 % hydro = Radiation_IRF(hydro,20,[],[],[],[]);
@@ -268,8 +252,14 @@ Plot_BEMIO(hydro)
 % Write_H5(hydro)
 % Plot_BEMIO(hydro)
 
+
+%% ================= READING KOCHIN FILES ===================%
+% theta(ntheta)= Kochin(3*(ntheta-1)+1); % theta
+% Kochin_BVP(ntheta,1,x)= Kochin(3*(ntheta-1)+2); % magnitude
+% Kochin_BVP(ntheta,2,x)= Kochin(3*(ntheta-1)+3); % phase
+
 % these from addditional functions called in bemio.m files?
-% hydro_nemoh.Ainf, % from Normalize() - simply gets A(max frequency)
+% hydro_nemoh.Ainf,
 % hydro_nemoh.ra_K, % radiation IRF (K), from Radiation_IRF()
 % hydro_nemoh.ra_t, % radiation IRF time, from Radiation_IRF()
 % hydro_nemoh.ra_w, % radiation IRF frequency, from Radiation_IRF()
@@ -284,4 +274,34 @@ Plot_BEMIO(hydro)
 % hydro_nemoh.ex_K, % from Excitation_IRF()
 % hydro_nemoh.ex_t, % from Excitation_IRF()
 % hydro_nemoh.ex_w % from Excitation_IRF()
+
+waitbar(8/8);
+Normaliz
+
+%%
+% get all required variables from netcdf file
+% for i=1:length(req_vars)
+%     current_var = req_vars{i};
+% %     f = strcat('hydro.', current_var, ' = ncread(', fn2, ', "', current_var, '");');
+%     f = ['cpt.', current_var, ' = ncread(', filename, ', "', current_var, '");'];
+% %     fprintf([f '\n']);
+%     eval(f);
+% end; clear i;
+% cpt.radiating_dof = cpt.radiating_dof';      % transpose char strings to correct orientation
+% cpt.influenced_dof = cpt.influenced_dof';    % transpose char strings to correct orientation
+
+% hydro(F).Nb = info.Dimensions(getInd(info.Dimensions,'body_name')).Length;
+% hydro(F).Nf = info.Dimensions(getInd(info.Dimensions,'body_name')).Length;
+
+% bodies = 
+
+% 
+% function ind = getInd(dimStruct, str2find)
+%     j = 0;
+%     for j=1:length(dimStruct)
+%         if string(dimStruct(j).Name) == str2find
+%             ind = j;
+%         end
+%     end
+% end
 
