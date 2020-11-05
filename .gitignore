@@ -138,4 +138,7 @@ ENV/
 # mkdocs documentation
 /site
 
+# matlab
+.asv
+
 # End of https://www.gitignore.io/api/python,fortran
