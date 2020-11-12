@@ -163,12 +163,13 @@ def hydrostatics_dataset(bodies: Sequence[FloatingBody]) -> xr.Dataset:
     for each of the bodies in the list passed as argument.
     """
     dataset = xr.Dataset()
-    for body_property in ['mass', 'hydrostatic_stiffness']:
+    for body_property in ['mass', 'center_of_buoyancy', 'center_of_mass', 'displaced_volume' ,'hydrostatic_stiffness']:
         bodies_properties = {body.name: body.__getattribute__(body_property) for body in bodies if hasattr(body, body_property)}
         if len(bodies_properties) > 0:
             bodies_properties = xr.concat(bodies_properties.values(), pd.Index(bodies_properties.keys(), name='body_name'))
             bodies_properties = _squeeze_dimensions(bodies_properties, dimensions=['body_name'])
             dataset = xr.merge([dataset, {body_property: bodies_properties}])
+            LOG.warning("adding HS data)
     return dataset
 
 

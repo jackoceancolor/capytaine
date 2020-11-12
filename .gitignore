@@ -140,5 +140,6 @@ ENV/
 
 # matlab
 .asv
+.h5
 
 # End of https://www.gitignore.io/api/python,fortran

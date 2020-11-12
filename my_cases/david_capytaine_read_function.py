@@ -3,6 +3,7 @@
 
 # 2020-05-23: Starting as a script that will evaluate a design based on properties/data provided in separate files.
 
+# from https://github.com/mattEhall/FrequencyDomain/tree/b89dd4f4a732fbe4afde56efe2b52c3e32e22d53
 
 import numpy as np
 import xarray as xr
@@ -11,12 +12,12 @@ import matplotlib.pyplot as plt
 import capytaine as cpt
 
 import sys
-sys.path.insert(1, '/code/MoorPy')
-import MoorPy as mp
+# sys.path.insert(1, '/code/MoorPy')
+# import MoorPy as mp
 
 # reload the libraries each time in case we make any changes
-import importlib
-mp = importlib.reload(mp)
+# import importlib
+# mp = importlib.reload(mp)
 
 
 ## This class represents linear (for now cylinderical) components in the substructure. 
