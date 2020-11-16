@@ -169,7 +169,8 @@ def hydrostatics_dataset(bodies: Sequence[FloatingBody]) -> xr.Dataset:
             bodies_properties = xr.concat(bodies_properties.values(), pd.Index(bodies_properties.keys(), name='body_name'))
             bodies_properties = _squeeze_dimensions(bodies_properties, dimensions=['body_name'])
             dataset = xr.merge([dataset, {body_property: bodies_properties}])
-            LOG.warning("adding HS data)
+            print("adding HS data")
+            LOG.warning("adding HS data")
     return dataset
 
 
@@ -309,7 +310,11 @@ def assemble_dataset(results: Sequence[LinearPotentialFlowResult],
     if hydrostatics:
         bodies = list({result.body for result in results})
         dataset = xr.merge([dataset, hydrostatics_dataset(bodies)])
+        print("printing from if hydrostatics:")
+        LOG.warning("printing from if hydrostatics:")
 
+    print("printing from assemble_datset")
+    LOG.warning("printing from assemble_datset")
     dataset.attrs.update(attrs)
     dataset.attrs['capytaine_version'] = __version__
     return dataset

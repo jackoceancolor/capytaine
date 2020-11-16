@@ -22,13 +22,14 @@ import xarray as xr
 import pandas as pd
 import logging
 
+
 logging.basicConfig(level=logging.WARNING)
 
 
 # Load sphere mesh file ------------------------------------------------------#
 sphere_file = os.getcwd() + os.path.sep + 'sphere.dat' # nemoh
 # sphere_file = os.getcwd() + os.path.sep + 'sphere.gdf' # wamit
-sphere_w = np.linspace(0.02, 8.4, 1) # 420 for full, 3 or 10 for tests
+sphere_w = np.linspace(0.02, 8.4, 3) # 420 for full, 3 or 10 for tests
 sphere_cg = (0,0,-2.0)
 sphere_headings = np.linspace(0,0,1)
 sphere_nc = True
@@ -36,15 +37,15 @@ sphere_ncFile = os.getcwd() + os.path.sep + 'sphere_hs_test.nc'
 # ----------------------------------------------------------------------------#
 
 
-# cd = cc.call_capy_hs(meshFName=sphere_file,
-#                 wCapy=sphere_w,
-#                 CoG=sphere_cg,
-#                 headings=sphere_headings,
-#                 saveNc=sphere_nc,
-#                 ncFName=sphere_ncFile,
-#                 body_name='sphere_capytaine',
-#                 depth = -50.0,
-#                 density = 1000.0)
+cd = cc.call_capy_hs(meshFName=sphere_file,
+                wCapy=sphere_w,
+                CoG=sphere_cg,
+                headings=sphere_headings,
+                saveNc=sphere_nc,
+                ncFName=sphere_ncFile,
+                body_name='sphere_capytaine',
+                depth = -50.0,
+                density = 1000.0)
 # ----------------------------------------------------------------------------#
 
 # ----------------------------------------------------------------------------#
