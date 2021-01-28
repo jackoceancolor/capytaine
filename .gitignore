@@ -143,3 +143,6 @@ ENV/
 .h5
 
 # End of https://www.gitignore.io/api/python,fortran
+
+# capytaine output
+*.nc
